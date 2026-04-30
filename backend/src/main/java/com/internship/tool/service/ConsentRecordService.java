@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,8 +22,8 @@ public class ConsentRecordService {
 
     private final ConsentRecordRepository consentRecordRepository;
     private final AuditLogRepository auditLogRepository;
+    private final AiServiceClient aiServiceClient;
 
-    // get all records with search and filters
     public Page<ConsentRecord> getAllRecords(
             String q, String status,
             String from, String to,
@@ -44,26 +43,26 @@ public class ConsentRecordService {
                 searchQ, searchStatus, fromDate, toDate, pageable);
     }
 
-    // get single record by id
     public Optional<ConsentRecord> getById(Long id) {
         return consentRecordRepository.findById(id)
                 .filter(ConsentRecord::getIsActive);
     }
 
-    // create new consent record
     public ConsentRecord create(ConsentRecord record, String performedBy) {
         record.setIsActive(true);
         record.setConsentStatus("PENDING");
         ConsentRecord saved = consentRecordRepository.save(record);
 
-        // log the create action
         logAudit(saved.getId(), "CREATE", performedBy,
                 null, saved.getConsentStatus(), "Record created");
+
+        // call AI service in background thread so response is not delayed
+        new Thread(() -> aiServiceClient.enrichWithAiDescription(
+                saved, this)).start();
 
         return saved;
     }
 
-    // update existing record
     public ConsentRecord update(Long id, ConsentRecord updated, String performedBy) {
         ConsentRecord existing = consentRecordRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record not found"));
@@ -80,7 +79,6 @@ public class ConsentRecordService {
         existing.setConsentDate(updated.getConsentDate());
         existing.setExpiryDate(updated.getExpiryDate());
 
-        // log status change separately if status changed
         if (!oldStatus.equals(updated.getConsentStatus())) {
             existing.setConsentStatus(updated.getConsentStatus());
             logAudit(id, "STATUS_CHANGE", performedBy,
@@ -93,7 +91,6 @@ public class ConsentRecordService {
         return consentRecordRepository.save(existing);
     }
 
-    // soft delete
     public void delete(Long id, String performedBy) {
         ConsentRecord record = consentRecordRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record not found"));
@@ -105,7 +102,6 @@ public class ConsentRecordService {
                 null, null, "Record soft deleted");
     }
 
-    // update AI fields after AI service responds
     public ConsentRecord updateAiFields(Long id, String description,
                                          Integer score, Boolean isFallback) {
         ConsentRecord record = consentRecordRepository.findById(id)
@@ -118,7 +114,6 @@ public class ConsentRecordService {
         return consentRecordRepository.save(record);
     }
 
-    // dashboard stats
     public Map<String, Long> getStats() {
         Map<String, Long> stats = new HashMap<>();
         stats.put("total", consentRecordRepository.countByIsActiveTrue());
@@ -133,7 +128,6 @@ public class ConsentRecordService {
         return stats;
     }
 
-    // internal audit log helper
     private void logAudit(Long recordId, String action,
                            String performedBy, String oldValue,
                            String newValue, String remarks) {
