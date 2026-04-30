@@ -30,8 +30,7 @@ public class ConsentRecordService {
             String from, String to,
             int page, int size) {
 
-        Pageable pageable = PageRequest.of(page, size,
-                Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size);
 
         LocalDateTime fromDate = (from != null && !from.isEmpty())
                 ? LocalDate.parse(from).atStartOfDay() : null;

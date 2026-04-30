@@ -22,27 +22,25 @@ function Login() {
   }
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+  e.preventDefault()
 
-    if (!formData.username.trim() || !formData.password.trim()) {
-      setError("Username and password are required")
-      return
-    }
-
-    setLoading(true)
-
-    // try real backend first, fall back to mock if not available
-    api.post("/auth/login", formData)
-      .then((res) => {
-        login(res.data.token, res.data.username)
-        navigate("/")
-      })
-      .catch(() => {
-        // temporary bypass until backend is ready
-        login("mock-token-123", formData.username)
-        navigate("/")
-      })
+  if (!formData.username.trim() || !formData.password.trim()) {
+    setError("Username and password are required")
+    return
   }
+
+  setLoading(true)
+
+  api.post("/auth/login", formData)
+    .then((res) => {
+      login(res.data.token, res.data.username)
+      navigate("/")
+    })
+    .catch(() => {
+      setError("Invalid username or password. Please try again.")
+      setLoading(false)
+    })
+}
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">

@@ -13,21 +13,32 @@ import java.time.LocalDateTime;
 @Repository
 public interface ConsentRecordRepository extends JpaRepository<ConsentRecord, Long> {
 
-    // get all active records with pagination
     Page<ConsentRecord> findByIsActiveTrue(Pageable pageable);
 
-    // search by keyword across multiple fields
-    @Query("""
-        SELECT c FROM ConsentRecord c
-        WHERE c.isActive = true
+    @Query(value = """
+        SELECT * FROM consent_record
+        WHERE is_active = true
         AND (:q IS NULL OR
-            LOWER(c.dataPrincipalName) LIKE LOWER(CONCAT('%', :q, '%')) OR
-            LOWER(c.dataFiduciaryName) LIKE LOWER(CONCAT('%', :q, '%')) OR
-            LOWER(c.purpose) LIKE LOWER(CONCAT('%', :q, '%'))
+            data_principal_name ILIKE '%' || CAST(:q AS TEXT) || '%' OR
+            data_fiduciary_name ILIKE '%' || CAST(:q AS TEXT) || '%' OR
+            purpose ILIKE '%' || CAST(:q AS TEXT) || '%'
         )
-        AND (:status IS NULL OR c.consentStatus = :status)
-        AND (:from IS NULL OR c.createdAt >= :from)
-        AND (:to IS NULL OR c.createdAt <= :to)
+        AND (:status IS NULL OR consent_status = CAST(:status AS TEXT))
+        AND (CAST(:from AS TIMESTAMP) IS NULL OR created_at >= CAST(:from AS TIMESTAMP))
+        AND (CAST(:to AS TIMESTAMP) IS NULL OR created_at <= CAST(:to AS TIMESTAMP))
+        ORDER BY created_at DESC
+        """, nativeQuery = true,
+        countQuery = """
+        SELECT COUNT(*) FROM consent_record
+        WHERE is_active = true
+        AND (:q IS NULL OR
+            data_principal_name ILIKE '%' || CAST(:q AS TEXT) || '%' OR
+            data_fiduciary_name ILIKE '%' || CAST(:q AS TEXT) || '%' OR
+            purpose ILIKE '%' || CAST(:q AS TEXT) || '%'
+        )
+        AND (:status IS NULL OR consent_status = CAST(:status AS TEXT))
+        AND (CAST(:from AS TIMESTAMP) IS NULL OR created_at >= CAST(:from AS TIMESTAMP))
+        AND (CAST(:to AS TIMESTAMP) IS NULL OR created_at <= CAST(:to AS TIMESTAMP))
         """)
     Page<ConsentRecord> searchRecords(
         @Param("q") String q,
@@ -37,9 +48,7 @@ public interface ConsentRecordRepository extends JpaRepository<ConsentRecord, Lo
         Pageable pageable
     );
 
-    // count by status for dashboard stats
     long countByConsentStatusAndIsActiveTrue(String consentStatus);
 
-    // count all active records
     long countByIsActiveTrue();
 }
