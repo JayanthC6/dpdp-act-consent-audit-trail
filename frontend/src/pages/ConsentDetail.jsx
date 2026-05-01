@@ -8,6 +8,49 @@ function ConsentDetail() {
   const [record, setRecord] = useState(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [recommendations, setRecommendations] = useState(null)
+  const [loadingRec, setLoadingRec] = useState(false)
+  const [report, setReport] = useState(null)
+  const [loadingReport, setLoadingReport] = useState(false)
+
+  const fetchRecommendations = () => {
+    setLoadingRec(true)
+    fetch("http://localhost:5000/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dataPrincipalName: record?.dataPrincipalName,
+        dataFiduciaryName: record?.dataFiduciaryName,
+        purpose: record?.purpose,
+        dataCategories: record?.dataCategories,
+        consentStatus: record?.consentStatus
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setRecommendations(data)
+        setLoadingRec(false)
+      })
+      .catch(() => setLoadingRec(false))
+  }
+
+  const fetchReport = () => {
+    setLoadingReport(true)
+    fetch("http://localhost:5000/generate-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        stats: { total: 1 },
+        records: [record]
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setReport(data)
+        setLoadingReport(false)
+      })
+      .catch(() => setLoadingReport(false))
+  }
 
   useEffect(() => {
     api.get(`/consent-records/${id}`)
@@ -215,11 +258,89 @@ function ConsentDetail() {
               </p>
             </div>
           </div>
+
+          {/* AI Panel */}
+        <div className="border-t pt-4">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            AI Actions
+          </h2>
+          <div className="flex gap-3 mb-4">
+            <button
+              onClick={fetchRecommendations}
+              disabled={loadingRec}
+              className="bg-purple-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
+            >
+              {loadingRec ? "Loading..." : "Get Recommendations"}
+            </button>
+            <button
+              onClick={fetchReport}
+              disabled={loadingReport}
+              className="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {loadingReport ? "Generating..." : "Generate Report"}
+            </button>
+          </div>
+
+          {/* Recommendations */}
+          {recommendations && (
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-gray-600 mb-2">Recommendations</h3>
+              <div className="space-y-2">
+                {recommendations.map((rec, index) => (
+                  <div key={index} className="bg-purple-50 rounded p-3">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-semibold text-purple-700">
+                        {rec.action_type}
+                      </span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
+                        ${rec.priority === "HIGH" ? "bg-red-100 text-red-700" : ""}
+                        ${rec.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-700" : ""}
+                        ${rec.priority === "LOW" ? "bg-green-100 text-green-700" : ""}
+                      `}>
+                        {rec.priority}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700">{rec.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Report */}
+          {report && (
+            <div className="bg-indigo-50 rounded p-4">
+              <h3 className="text-sm font-semibold text-indigo-700 mb-2">{report.title}</h3>
+              <p className="text-sm text-gray-700 mb-3">{report.summary}</p>
+              {report.key_items && report.key_items.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Key Findings</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    {report.key_items.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-700">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {report.recommendations && report.recommendations.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Recommendations</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    {report.recommendations.map((rec, i) => (
+                      <li key={i} className="text-sm text-gray-700">{rec}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
+      </div>
 
       </div>
     </div>
   )
 }
+
 
 export default ConsentDetail
