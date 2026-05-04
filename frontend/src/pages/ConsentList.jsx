@@ -9,7 +9,6 @@ function ConsentList() {
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
 
-  // filter state
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const [fromDate, setFromDate] = useState("")
@@ -19,12 +18,10 @@ function ConsentList() {
   const pageSize = 10
   const debounceRef = useRef(null)
 
-  // whenever filters or page changes, fetch records
   useEffect(() => {
     fetchRecords(currentPage)
   }, [currentPage, statusFilter, fromDate, toDate])
 
-  // debounce the search — wait 400ms after user stops typing
   const handleSearchChange = (e) => {
     const value = e.target.value
     setSearchQuery(value)
@@ -39,7 +36,6 @@ function ConsentList() {
   const fetchRecords = (page, search = searchQuery) => {
     setLoading(true)
 
-    // build query params based on active filters
     const params = new URLSearchParams()
     params.append("page", page)
     params.append("size", pageSize)
@@ -83,16 +79,40 @@ function ConsentList() {
     setCurrentPage(0)
   }
 
+  const handleExport = () => {
+  api.get("/consent-records/export", { responseType: "blob" })
+    .then(res => {
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "consent-records.csv"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    })
+    .catch(() => alert("Export failed. Please try again."))
+}
+
   const anyFilterActive = searchQuery || statusFilter || fromDate || toDate
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Consent Records</h1>
+
+      {/* Header with Export button */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Consent Records</h1>
+        <button
+          onClick={handleExport}
+          className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700"
+        >
+          Export CSV
+        </button>
+      </div>
 
       {/* Search and Filter Bar */}
       <div className="bg-white rounded-lg shadow p-4 mb-4 flex flex-wrap gap-3 items-end">
 
-        {/* Debounced search input */}
         <div className="flex-1 min-w-48">
           <label className="block text-xs font-medium text-gray-500 mb-1">Search</label>
           <input
@@ -104,7 +124,6 @@ function ConsentList() {
           />
         </div>
 
-        {/* Status dropdown */}
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
           <select
@@ -120,7 +139,6 @@ function ConsentList() {
           </select>
         </div>
 
-        {/* Date range */}
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">From Date</label>
           <input
@@ -130,6 +148,7 @@ function ConsentList() {
             className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">To Date</label>
           <input
@@ -140,7 +159,6 @@ function ConsentList() {
           />
         </div>
 
-        {/* Clear filters button — only shows when a filter is active */}
         {anyFilterActive && (
           <button
             onClick={clearFilters}
