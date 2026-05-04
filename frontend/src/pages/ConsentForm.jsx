@@ -6,7 +6,6 @@ function ConsentForm() {
   const navigate = useNavigate()
   const { id } = useParams()
 
-  // if id exists in URL, we are editing. if not, we are creating
   const isEditing = Boolean(id)
 
   const [formData, setFormData] = useState({
@@ -26,7 +25,6 @@ function ConsentForm() {
   const [submitting, setSubmitting] = useState(false)
   const [loadingRecord, setLoadingRecord] = useState(false)
 
-  // if editing, fetch the existing record and fill the form
   useEffect(() => {
     if (isEditing) {
       setLoadingRecord(true)
@@ -54,17 +52,14 @@ function ConsentForm() {
     }
   }, [id, isEditing])
 
-  // update formData when user types in any field
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    // clear the error for this field as user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }))
     }
   }
 
-  // validate all fields before submitting
   const validate = () => {
     const newErrors = {}
 
@@ -114,9 +109,16 @@ function ConsentForm() {
 
     setSubmitting(true)
 
+    // convert date strings to LocalDateTime format for backend
+    const payload = {
+      ...formData,
+      consentDate: formData.consentDate ? formData.consentDate + "T00:00:00" : null,
+      expiryDate: formData.expiryDate ? formData.expiryDate + "T00:00:00" : null,
+    }
+
     const request = isEditing
-      ? api.put(`/consent-records/${id}`, formData)
-      : api.post("/consent-records", formData)
+      ? api.put(`/consent-records/${id}`, payload)
+      : api.post("/consent-records", payload)
 
     request
       .then(() => {
@@ -144,7 +146,6 @@ function ConsentForm() {
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
 
-        {/* Data Principal section */}
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
           Data Principal (Citizen)
         </h2>
@@ -200,7 +201,6 @@ function ConsentForm() {
           )}
         </div>
 
-        {/* Data Fiduciary section */}
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mt-4">
           Data Fiduciary (Organisation)
         </h2>
@@ -239,7 +239,6 @@ function ConsentForm() {
           )}
         </div>
 
-        {/* Consent Details */}
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mt-4">
           Consent Details
         </h2>
@@ -325,7 +324,6 @@ function ConsentForm() {
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"

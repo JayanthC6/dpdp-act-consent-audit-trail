@@ -40,6 +40,12 @@ spring:
           starttls:
             enable: true
 
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
+    serialization:
+      write-dates-as-timestamps: false
+
 app:
   jwt:
     secret: ${JWT_SECRET:dpdp-act-consent-audit-trail-secret-key-2024-internship}
