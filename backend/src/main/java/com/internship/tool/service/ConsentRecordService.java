@@ -23,6 +23,7 @@ public class ConsentRecordService {
     private final ConsentRecordRepository consentRecordRepository;
     private final AuditLogRepository auditLogRepository;
     private final AiServiceClient aiServiceClient;
+    private final EmailService emailService;
 
     public Page<ConsentRecord> getAllRecords(
             String q, String status,
@@ -56,6 +57,9 @@ public class ConsentRecordService {
         logAudit(saved.getId(), "CREATE", performedBy,
                 null, saved.getConsentStatus(), "Record created");
 
+        // send email notification
+        emailService.sendConsentCreatedEmail(saved);
+
         // call AI service in background thread so response is not delayed
         new Thread(() -> aiServiceClient.enrichWithAiDescription(
                 saved, this)).start();
@@ -83,6 +87,13 @@ public class ConsentRecordService {
             existing.setConsentStatus(updated.getConsentStatus());
             logAudit(id, "STATUS_CHANGE", performedBy,
                     oldStatus, updated.getConsentStatus(), "Status updated");
+
+            // send email based on new status
+            if ("GRANTED".equals(updated.getConsentStatus())) {
+                emailService.sendConsentGrantedEmail(existing);
+            } else if ("REVOKED".equals(updated.getConsentStatus())) {
+                emailService.sendConsentRevokedEmail(existing);
+            }
         } else {
             logAudit(id, "UPDATE", performedBy,
                     null, null, "Record updated");

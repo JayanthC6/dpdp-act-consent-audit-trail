@@ -5,6 +5,7 @@ import com.internship.tool.repository.AuditLogRepository;
 import com.internship.tool.repository.ConsentRecordRepository;
 import com.internship.tool.service.AiServiceClient;
 import com.internship.tool.service.ConsentRecordService;
+import com.internship.tool.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,9 @@ class ConsentRecordServiceTest {
 
     @Mock
     private AiServiceClient aiServiceClient;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private ConsentRecordService consentRecordService;
@@ -94,6 +98,7 @@ class ConsentRecordServiceTest {
         when(consentRecordRepository.save(any(ConsentRecord.class)))
                 .thenReturn(sampleRecord);
         when(auditLogRepository.save(any())).thenReturn(null);
+        doNothing().when(emailService).sendConsentCreatedEmail(any());
 
         ConsentRecord input = ConsentRecord.builder()
                 .dataPrincipalName("Test User")
@@ -106,6 +111,7 @@ class ConsentRecordServiceTest {
 
         assertNotNull(result);
         verify(consentRecordRepository, times(1)).save(any());
+        verify(emailService, times(1)).sendConsentCreatedEmail(any());
     }
 
     @Test
