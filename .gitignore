@@ -1,5 +1,33 @@
-.env 
-target/ 
-node_modules/ 
-__pycache__/ 
-chroma_data/ 
+# Environment — NEVER commit this
+.env
+
+# Maven
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+chroma_data/
+
+# Logs
+*.log
+logs/

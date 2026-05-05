@@ -16,7 +16,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 public class ConsentAuditTrailApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(ConsentAuditTrailApplication.class, args);
     }
