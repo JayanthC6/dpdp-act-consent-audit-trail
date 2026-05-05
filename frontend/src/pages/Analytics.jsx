@@ -26,8 +26,15 @@ function Analytics() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-gray-500">Loading analytics...</p>
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "300px",
+        fontFamily: "Arial, sans-serif",
+        color: "#6b7280"
+      }}>
+        Loading analytics...
       </div>
     )
   }
@@ -50,39 +57,154 @@ function Analytics() {
     ? Math.round((stats.granted / stats.total) * 100)
     : 0
 
+  const tableRows = [
+    { label: "Granted", value: stats.granted, color: "#15803d", bg: "#f0fdf4" },
+    { label: "Pending", value: stats.pending, color: "#b45309", bg: "#fefce8" },
+    { label: "Revoked", value: stats.revoked, color: "#be123c", bg: "#fff1f2" },
+    { label: "Expired", value: stats.expired, color: "#4b5563", bg: "#f9fafb" },
+  ]
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Analytics</h1>
+    <div style={{
+      padding: "24px",
+      fontFamily: "Arial, sans-serif",
+      maxWidth: "1200px",
+      margin: "0 auto"
+    }}>
+
+      {/* Header */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "24px"
+      }}>
+        <div>
+          <h1 style={{
+            fontSize: "24px",
+            fontWeight: "700",
+            color: "#1a1a2e",
+            margin: "0 0 4px"
+          }}>
+            Analytics
+          </h1>
+          <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>
+            DPDP Act Compliance Insights
+          </p>
+        </div>
         <button
           onClick={() => navigate("/")}
-          className="text-sm text-blue-700 hover:underline"
+          style={{
+            background: "#1B4F8A",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            padding: "8px 16px",
+            fontSize: "13px",
+            fontWeight: "600",
+            cursor: "pointer",
+            fontFamily: "Arial, sans-serif"
+          }}
         >
           View All Records →
         </button>
       </div>
 
-      {/* Compliance Rate Card */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6 flex items-center gap-6">
-        <div className="text-center">
-          <p className="text-5xl font-bold text-blue-700">{complianceRate}%</p>
-          <p className="text-sm text-gray-500 mt-1">Compliance Rate</p>
+      {/* Compliance Rate Banner */}
+      <div style={{
+        background: "linear-gradient(135deg, #1B4F8A, #163f6e)",
+        borderRadius: "16px",
+        padding: "28px 32px",
+        marginBottom: "24px",
+        display: "flex",
+        alignItems: "center",
+        gap: "32px",
+        color: "white"
+      }}>
+        <div style={{ textAlign: "center", minWidth: "120px" }}>
+          <div style={{
+            fontSize: "56px",
+            fontWeight: "800",
+            lineHeight: 1,
+            color: complianceRate >= 70 ? "#4ade80" : complianceRate >= 50 ? "#fbbf24" : "#f87171"
+          }}>
+            {complianceRate}%
+          </div>
+          <div style={{
+            fontSize: "13px",
+            color: "rgba(255,255,255,0.7)",
+            marginTop: "6px",
+            fontWeight: "600"
+          }}>
+            Compliance Rate
+          </div>
         </div>
-        <div className="border-l pl-6">
-          <p className="text-sm text-gray-600">
+        <div style={{
+          borderLeft: "1px solid rgba(255,255,255,0.2)",
+          paddingLeft: "32px"
+        }}>
+          <div style={{ fontSize: "16px", fontWeight: "600", marginBottom: "8px" }}>
+            DPDP Act 2023 — Compliance Status
+          </div>
+          <div style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
             {stats.granted} out of {stats.total} consent records are currently
-            in GRANTED status. A higher compliance rate indicates better
-            data governance under the DPDP Act 2023.
-          </p>
+            in GRANTED status. {complianceRate >= 70
+              ? "Your organization is maintaining good compliance standards."
+              : "Consider reviewing pending and revoked consents to improve compliance."}
+          </div>
+          <div style={{
+            display: "flex",
+            gap: "16px",
+            marginTop: "12px"
+          }}>
+            {[
+              { label: "Granted", value: stats.granted, color: "#4ade80" },
+              { label: "Pending", value: stats.pending, color: "#fbbf24" },
+              { label: "Revoked", value: stats.revoked, color: "#f87171" },
+              { label: "Expired", value: stats.expired, color: "#9ca3af" },
+            ].map(item => (
+              <div key={item.label} style={{ textAlign: "center" }}>
+                <div style={{
+                  fontSize: "20px",
+                  fontWeight: "700",
+                  color: item.color
+                }}>
+                  {item.value}
+                </div>
+                <div style={{
+                  fontSize: "11px",
+                  color: "rgba(255,255,255,0.6)"
+                }}>
+                  {item.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "16px",
+        marginBottom: "16px"
+      }}>
 
         {/* Pie Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-base font-semibold text-gray-700 mb-4">
+        <div style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "24px",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+          border: "1px solid #f0f0f0"
+        }}>
+          <h2 style={{
+            fontSize: "16px",
+            fontWeight: "600",
+            color: "#1a1a2e",
+            margin: "0 0 16px"
+          }}>
             Consent Distribution
           </h2>
           <ResponsiveContainer width="100%" height={280}>
@@ -102,28 +224,45 @@ function Analytics() {
                 ))}
               </Pie>
               <Legend />
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "8px",
+                  fontFamily: "Arial"
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         {/* Line Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-base font-semibold text-gray-700 mb-4">
+        <div style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "24px",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+          border: "1px solid #f0f0f0"
+        }}>
+          <h2 style={{
+            fontSize: "16px",
+            fontWeight: "600",
+            color: "#1a1a2e",
+            margin: "0 0 16px"
+          }}>
             Status Overview
           </h2>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={lineData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-              <Tooltip />
+              <XAxis dataKey="period" tick={{ fontSize: 12, fontFamily: "Arial" }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12, fontFamily: "Arial" }} />
+              <Tooltip contentStyle={{ borderRadius: "8px", fontFamily: "Arial" }} />
               <Line
                 type="monotone"
                 dataKey="count"
-                stroke="#2563eb"
-                strokeWidth={2}
-                dot={{ fill: "#2563eb", r: 5 }}
+                stroke="#1B4F8A"
+                strokeWidth={3}
+                dot={{ fill: "#1B4F8A", r: 6 }}
+                activeDot={{ r: 8 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -132,45 +271,79 @@ function Analytics() {
       </div>
 
       {/* Summary Table */}
-      <div className="bg-white rounded-lg shadow p-6 mt-6">
-        <h2 className="text-base font-semibold text-gray-700 mb-4">
+      <div style={{
+        background: "white",
+        borderRadius: "12px",
+        padding: "24px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+        border: "1px solid #f0f0f0"
+      }}>
+        <h2 style={{
+          fontSize: "16px",
+          fontWeight: "600",
+          color: "#1a1a2e",
+          margin: "0 0 16px"
+        }}>
           Summary
         </h2>
-        <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-            <tr>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Count</th>
-              <th className="px-4 py-3">Percentage</th>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+          <thead>
+            <tr style={{ background: "#f9fafb" }}>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#6b7280", fontSize: "12px", textTransform: "uppercase", fontWeight: "600" }}>Status</th>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#6b7280", fontSize: "12px", textTransform: "uppercase", fontWeight: "600" }}>Count</th>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#6b7280", fontSize: "12px", textTransform: "uppercase", fontWeight: "600" }}>Percentage</th>
+              <th style={{ padding: "12px 16px", textAlign: "left", color: "#6b7280", fontSize: "12px", textTransform: "uppercase", fontWeight: "600" }}>Progress</th>
             </tr>
           </thead>
           <tbody>
-            {[
-              { label: "Granted", value: stats.granted, color: "text-green-700" },
-              { label: "Pending", value: stats.pending, color: "text-yellow-700" },
-              { label: "Revoked", value: stats.revoked, color: "text-red-700" },
-              { label: "Expired", value: stats.expired, color: "text-gray-600" },
-            ].map((row) => (
-              <tr key={row.label} className="border-b">
-                <td className={`px-4 py-3 font-medium ${row.color}`}>
-                  {row.label}
+            {tableRows.map((row) => (
+              <tr key={row.label} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                <td style={{ padding: "12px 16px" }}>
+                  <span style={{
+                    background: row.bg,
+                    color: row.color,
+                    padding: "4px 10px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    fontWeight: "600"
+                  }}>
+                    {row.label}
+                  </span>
                 </td>
-                <td className="px-4 py-3">{row.value}</td>
-                <td className="px-4 py-3">
-                  {stats.total > 0
-                    ? Math.round((row.value / stats.total) * 100)
-                    : 0}%
+                <td style={{ padding: "12px 16px", fontWeight: "600", color: "#1a1a2e" }}>
+                  {row.value}
+                </td>
+                <td style={{ padding: "12px 16px", color: "#6b7280" }}>
+                  {stats.total > 0 ? Math.round((row.value / stats.total) * 100) : 0}%
+                </td>
+                <td style={{ padding: "12px 16px", width: "200px" }}>
+                  <div style={{
+                    background: "#f0f0f0",
+                    borderRadius: "4px",
+                    height: "8px",
+                    overflow: "hidden"
+                  }}>
+                    <div style={{
+                      background: row.color,
+                      height: "100%",
+                      width: `${stats.total > 0 ? Math.round((row.value / stats.total) * 100) : 0}%`,
+                      borderRadius: "4px",
+                      transition: "width 0.3s"
+                    }} />
+                  </div>
                 </td>
               </tr>
             ))}
-            <tr className="bg-gray-50 font-semibold">
-              <td className="px-4 py-3">Total</td>
-              <td className="px-4 py-3">{stats.total}</td>
-              <td className="px-4 py-3">100%</td>
+            <tr style={{ background: "#f9fafb", fontWeight: "700" }}>
+              <td style={{ padding: "12px 16px", color: "#1a1a2e" }}>Total</td>
+              <td style={{ padding: "12px 16px", color: "#1a1a2e" }}>{stats.total}</td>
+              <td style={{ padding: "12px 16px", color: "#1a1a2e" }}>100%</td>
+              <td style={{ padding: "12px 16px" }}></td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </div>
   )
 }
